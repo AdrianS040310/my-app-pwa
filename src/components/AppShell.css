@@ -1,0 +1,44 @@
+.app-shell {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.app-content {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    opacity: 0;
+    animation: fadeIn 0.5s ease-in-out 0.2s forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.app-shell * {
+    box-sizing: border-box;
+}
+
+.app-shell {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+        'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+.app-shell *,
+.app-shell *::before,
+.app-shell *::after {
+    animation-fill-mode: both;
+}
