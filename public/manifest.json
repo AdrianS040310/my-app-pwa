@@ -1,0 +1,42 @@
+{
+  "name": "Mi Aplicación Web Progresiva",
+  "short_name": "Mi PWA",
+  "description": "Una aplicación web progresiva moderna construida con React y Vite",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#646cff",
+  "lang": "es",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/MyPWA-74x74.webp",
+      "sizes": "74x74",
+      "type": "image/webp",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/MyPWA-144x144.webp",
+      "sizes": "144x144",
+      "type": "image/webp",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/icons/MyPWA-1024x1024.webp",
+      "sizes": "1024x1024",
+      "type": "image/webp",
+      "purpose": "maskable any"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Página Principal",
+      "short_name": "Inicio",
+      "description": "Ir a la página principal",
+      "url": "/",
+      "icons": [{ "src": "/icons/MyPWA-144X144.webp", "sizes": "144X144" }]
+    }
+  ]
+}
