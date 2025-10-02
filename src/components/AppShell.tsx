@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import SplashScreen from './SplashScreen';
 import HomeScreen from './HomeScreen';
+import ServiceWorkerStatus from './ServiceWorkerStatus';
+import { useServiceWorker } from '../hooks/useServiceWorker';
 import './AppShell.css';
 
 const AppShell: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAppReady, setIsAppReady] = useState(false);
+
+  // Usar hook personalizado para Service Worker
+  const {
+    isRegistered,
+    isUpdateAvailable,
+    isOffline,
+    error: swError,
+  } = useServiceWorker();
 
   useEffect(() => {
     // Simular carga de recursos críticos
@@ -30,24 +40,25 @@ const AppShell: React.FC = () => {
     initializeApp();
   }, []);
 
-  // Registrar Service Worker si está disponible
+  // Mostrar información del Service Worker en la consola
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker
-          .register('/sw.js')
-          .then((registration) => {
-            console.log('SW registered: ', registration);
-          })
-          .catch((registrationError) => {
-            console.log('SW registration failed: ', registrationError);
-          });
-      });
+    if (isRegistered) {
+      console.log('[APP] Service Worker registrado correctamente');
     }
-  }, []);
+    if (swError) {
+      console.error('[APP] Error del Service Worker:', swError);
+    }
+    if (isOffline) {
+      console.log('[APP] Aplicación funcionando offline');
+    }
+    if (isUpdateAvailable) {
+      console.log('[APP] Actualización disponible');
+    }
+  }, [isRegistered, swError, isOffline, isUpdateAvailable]);
 
   return (
     <div className="app-shell">
+      <ServiceWorkerStatus />
       <SplashScreen isVisible={isLoading} />
       {isAppReady && !isLoading && (
         <div className="app-content">
