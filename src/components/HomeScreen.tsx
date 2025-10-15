@@ -1,4 +1,5 @@
 import React from 'react';
+import OfflineForm from './OfflineForm';
 import './HomeScreen.css';
 
 const HomeScreen: React.FC = () => {
@@ -38,6 +39,10 @@ const HomeScreen: React.FC = () => {
             <h3>Offline</h3>
             <p>Funciona sin conexión a internet</p>
           </div>
+        </section>
+
+        <section className="offline-form-section">
+          <OfflineForm />
         </section>
       </main>
 
