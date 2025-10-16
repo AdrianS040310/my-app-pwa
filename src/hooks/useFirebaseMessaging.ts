@@ -108,11 +108,7 @@ export const useFirebaseMessaging = () => {
       const { messaging, VAPID_KEY } = await getFirebaseConfig();
 
       // Verificar que la VAPID key esté configurada
-      if (
-        !VAPID_KEY ||
-        VAPID_KEY === 'YOUR_REAL_VAPID_KEY_HERE' ||
-        VAPID_KEY === 'YOUR_VAPID_KEY_HERE'
-      ) {
+      if (!VAPID_KEY) {
         throw new Error(
           'VAPID key no configurada. Ve a Firebase Console > Project Settings > Cloud Messaging para obtener tu VAPID key real'
         );
