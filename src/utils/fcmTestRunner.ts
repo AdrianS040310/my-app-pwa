@@ -66,7 +66,7 @@ export class FCMTestRunner {
       const { messaging, VAPID_KEY } = await import('../firebase/config');
 
       const hasMessaging = !!messaging;
-      const hasVapidKey = VAPID_KEY && VAPID_KEY !== 'YOUR_VAPID_KEY_HERE';
+      const hasVapidKey = !!VAPID_KEY;
 
       this.addResult({
         step: 'Configuración de Firebase',
@@ -161,9 +161,9 @@ export class FCMTestRunner {
       }
 
       // Intentar obtener token FCM (sin hacer el registro completo)
-      const { messaging, VAPID_KEY } = await import('../firebase/config');
+      const { VAPID_KEY } = await import('../firebase/config');
 
-      if (VAPID_KEY === 'YOUR_VAPID_KEY_HERE') {
+      if (!VAPID_KEY) {
         this.addResult({
           step: 'Registro FCM',
           success: false,

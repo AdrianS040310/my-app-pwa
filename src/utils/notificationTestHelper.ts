@@ -5,7 +5,7 @@ export interface TestNotificationPayload {
   body: string;
   icon?: string;
   badge?: string;
-  data?: Record<string, any>;
+  data?: Record<string, unknown>;
   actions?: Array<{
     action: string;
     title: string;
@@ -90,7 +90,7 @@ export const simulateNotification = (
       notification.close();
       
       // Simular navegación si hay URL en los datos
-      if (payload.data?.url) {
+      if (payload.data?.url && typeof payload.data.url === 'string') {
         window.location.href = payload.data.url;
       }
     };

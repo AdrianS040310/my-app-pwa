@@ -1,4 +1,4 @@
-import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
 
 // Define the schema for our database
 interface StudentActivityDB extends DBSchema {
@@ -38,13 +38,13 @@ export const initDB = async (): Promise<IDBPDatabase<StudentActivityDB>> => {
             keyPath: 'id',
             autoIncrement: true,
           });
-          
+
           // Create index for timestamp-based queries
           store.createIndex('by-timestamp', 'timestamp');
         }
       },
     });
-    
+
     console.log('IndexedDB initialized successfully');
     return db;
   } catch (error) {
@@ -63,12 +63,12 @@ export const addEntry = async (entry: {
   try {
     const database = await initDB();
     const timestamp = Date.now();
-    
+
     const newEntry = {
       ...entry,
       timestamp,
     };
-    
+
     const id = await database.add(STORE_NAME, newEntry);
     console.log('Entry added successfully with ID:', id);
     return id;
@@ -81,18 +81,25 @@ export const addEntry = async (entry: {
 /**
  * Get all entries from the database
  */
-export const getAllEntries = async (): Promise<Array<{
-  id: number;
-  name: string;
-  activity: string;
-  timestamp: number;
-}>> => {
+export const getAllEntries = async (): Promise<
+  Array<{
+    id: number;
+    name: string;
+    activity: string;
+    timestamp: number;
+  }>
+> => {
   try {
     const database = await initDB();
     const entries = await database.getAll(STORE_NAME);
-    
-    // Sort by timestamp (newest first)
-    return entries.sort((a, b) => b.timestamp - a.timestamp);
+
+    // Sort by timestamp (newest first) and filter out entries without ID
+    return entries
+      .filter(
+        (entry): entry is typeof entry & { id: number } =>
+          entry.id !== undefined
+      )
+      .sort((a, b) => b.timestamp - a.timestamp);
   } catch (error) {
     console.error('Failed to get entries:', error);
     throw error;
