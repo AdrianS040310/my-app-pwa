@@ -36,7 +36,8 @@
   background-color: currentColor;
 }
 
-.offline-message {
+.offline-message,
+.online-message {
   font-size: 12px;
   opacity: 0.8;
 }
@@ -150,7 +151,11 @@
   font-size: 20px;
   font-weight: 600;
   color: #111827;
-  margin: 0 0 20px 0;
+  margin: 0;
+}
+
+.entries-header {
+  margin-bottom: 20px;
 }
 
 .loading-message,
@@ -222,9 +227,14 @@
   opacity: 0.6;
 }
 
-.delete-button:hover {
+.delete-button:hover:not(:disabled) {
   background-color: #fee2e2;
   opacity: 1;
+}
+
+.delete-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {

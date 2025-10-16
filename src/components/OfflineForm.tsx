@@ -4,8 +4,19 @@ import {
   getAllEntries,
   deleteEntry,
   initDB,
+  addToSyncQueue,
+  syncFromServer,
+  sendToServer,
+  deleteFromServer,
+  addDeletionToSyncQueue,
 } from '../db/indexedDB-native';
 import './OfflineForm.css';
+
+interface ServiceWorkerWithSync extends ServiceWorkerRegistration {
+  sync: {
+    register(tag: string): Promise<void>;
+  };
+}
 
 interface ActivityEntry {
   id?: number;
@@ -21,16 +32,63 @@ const OfflineForm: React.FC = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [swRegistration, setSwRegistration] =
+    useState<ServiceWorkerWithSync | null>(null);
 
   useEffect(() => {
     const initializeData = async () => {
       setIsLoading(true);
       try {
         await initDB();
-        const allEntries = await getAllEntries();
-        setEntries(allEntries);
+
+        // Get service worker registration for background sync
+        if (
+          'serviceWorker' in navigator &&
+          'sync' in window.ServiceWorkerRegistration.prototype
+        ) {
+          const registration = await navigator.serviceWorker.ready;
+          setSwRegistration(registration as ServiceWorkerWithSync);
+          console.log(
+            'Service Worker registration obtained for background sync'
+          );
+        } else {
+          console.log('Background Sync not supported');
+        }
+
+        // Try to sync from server if online, otherwise load local data
+        if (navigator.onLine) {
+          setIsSyncing(true);
+          try {
+            console.log('🔄 App opened - syncing from server...');
+            const syncedEntries = await syncFromServer();
+            setEntries(syncedEntries);
+            console.log('✅ Successfully loaded data from server');
+          } catch (error) {
+            console.error(
+              '❌ Failed to sync from server, loading local data:',
+              error
+            );
+            const localEntries = await getAllEntries();
+            setEntries(localEntries);
+          } finally {
+            setIsSyncing(false);
+          }
+        } else {
+          console.log('📱 App opened offline - loading local data');
+          const localEntries = await getAllEntries();
+          setEntries(localEntries);
+        }
       } catch (error) {
         console.error('Failed to initialize data:', error);
+        // Fallback to local data
+        try {
+          const localEntries = await getAllEntries();
+          setEntries(localEntries);
+        } catch (fallbackError) {
+          console.error('Failed to load local data:', fallbackError);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -39,11 +97,39 @@ const OfflineForm: React.FC = () => {
     initializeData();
   }, []);
 
-  // Listen for online/offline events
+  // Listen for online/offline events and auto-sync when online
   useEffect(() => {
-    const handleOnline = () => {
+    const handleOnline = async () => {
       setIsOnline(true);
       console.log('App is now online');
+
+      // Sync from server when coming back online
+      setIsSyncing(true);
+      try {
+        console.log('🔄 Connection restored - syncing from server...');
+        const syncedEntries = await syncFromServer();
+        setEntries(syncedEntries);
+        console.log('✅ Successfully synced from server after reconnection');
+      } catch (error) {
+        console.error(
+          '❌ Failed to sync from server after reconnection:',
+          error
+        );
+      } finally {
+        setIsSyncing(false);
+      }
+
+      // Trigger background sync for pending entries
+      if (swRegistration) {
+        swRegistration.sync
+          .register('sync-entries')
+          .then(() => {
+            console.log('Auto-sync triggered when coming back online');
+          })
+          .catch((error) => {
+            console.error('Failed to trigger auto-sync:', error);
+          });
+      }
     };
 
     const handleOffline = () => {
@@ -58,7 +144,7 @@ const OfflineForm: React.FC = () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [swRegistration]);
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -87,6 +173,54 @@ const OfflineForm: React.FC = () => {
 
       setEntries((prevEntries) => [newEntry, ...prevEntries]);
 
+      // Handle sync based on connection status
+      if (isOnline) {
+        // If online, send immediately to server
+        try {
+          await sendToServer({
+            name: name.trim(),
+            activity: activity.trim(),
+            timestamp: Date.now(),
+          });
+          console.log('Entry sent to server immediately');
+        } catch (serverError) {
+          console.error(
+            'Failed to send to server, adding to sync queue:',
+            serverError
+          );
+          // If server fails, add to sync queue as fallback
+          if (swRegistration) {
+            try {
+              await addToSyncQueue({
+                name: name.trim(),
+                activity: activity.trim(),
+                timestamp: Date.now(),
+              });
+              await swRegistration.sync.register('sync-entries');
+              console.log('Entry added to sync queue as fallback');
+            } catch (syncError) {
+              console.error('Failed to add to sync queue:', syncError);
+            }
+          }
+        }
+      } else {
+        // If offline, add to sync queue and register background sync
+        if (swRegistration) {
+          try {
+            await addToSyncQueue({
+              name: name.trim(),
+              activity: activity.trim(),
+              timestamp: Date.now(),
+            });
+
+            await swRegistration.sync.register('sync-entries');
+            console.log('Background sync registered for offline entry');
+          } catch (syncError) {
+            console.error('Failed to register background sync:', syncError);
+          }
+        }
+      }
+
       // Clear form
       setName('');
       setActivity('');
@@ -106,15 +240,62 @@ const OfflineForm: React.FC = () => {
       return;
     }
 
+    setDeletingId(id);
+
     try {
+      // Find the entry to get its server ID
+      const entryToDelete = entries.find((entry) => entry.id === id);
+      if (!entryToDelete) {
+        throw new Error('Entry not found');
+      }
+
+      // Delete from local storage first
       await deleteEntry(id);
       setEntries((prevEntries) =>
         prevEntries.filter((entry) => entry.id !== id)
       );
+
+      // Handle server deletion based on connection status
+      if (isOnline && entryToDelete.id && entryToDelete.id > 0) {
+        // If online and has server ID, delete from server immediately
+        try {
+          await deleteFromServer(entryToDelete.id);
+          console.log('Entry deleted from server successfully');
+        } catch (serverError) {
+          console.error(
+            'Failed to delete from server, adding to sync queue:',
+            serverError
+          );
+          // If server deletion fails, add to sync queue as fallback
+          if (swRegistration) {
+            try {
+              await addDeletionToSyncQueue(entryToDelete.id);
+              await swRegistration.sync.register('sync-entries');
+              console.log('Deletion added to sync queue as fallback');
+            } catch (syncError) {
+              console.error('Failed to add deletion to sync queue:', syncError);
+            }
+          }
+        }
+      } else if (!isOnline && entryToDelete.id && entryToDelete.id > 0) {
+        // If offline and has server ID, add deletion to sync queue
+        if (swRegistration) {
+          try {
+            await addDeletionToSyncQueue(entryToDelete.id);
+            await swRegistration.sync.register('sync-entries');
+            console.log('Deletion added to sync queue for offline entry');
+          } catch (syncError) {
+            console.error('Failed to add deletion to sync queue:', syncError);
+          }
+        }
+      }
+
       console.log('Entry deleted successfully');
     } catch (error) {
       console.error('Failed to delete entry:', error);
       alert('Error al eliminar la entrada. Por favor, inténtalo de nuevo.');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -139,7 +320,15 @@ const OfflineForm: React.FC = () => {
         </span>
         {!isOnline && (
           <span className="offline-message">
-            - Los datos se guardan localmente
+            - Los datos se guardan localmente y se sincronizarán automáticamente
+            cuando haya conexión
+          </span>
+        )}
+        {isOnline && (
+          <span className="online-message">
+            {isSyncing
+              ? '🔄 Sincronizando con el servidor...'
+              : '- Conectado. La sincronización es automática.'}
           </span>
         )}
       </div>
@@ -188,19 +377,29 @@ const OfflineForm: React.FC = () => {
             className="submit-button"
             disabled={isSubmitting || !name.trim() || !activity.trim()}
           >
-            {isSubmitting ? 'Guardando...' : 'Guardar Actividad'}
+            {isSubmitting
+              ? isOnline
+                ? 'Enviando al servidor...'
+                : 'Guardando localmente...'
+              : 'Guardar Actividad'}
           </button>
         </form>
       </div>
 
       {/* Entries List Section */}
       <div className="entries-section">
-        <h3 className="entries-title">
-          Actividades Registradas ({entries.length})
-        </h3>
+        <div className="entries-header">
+          <h3 className="entries-title">
+            Actividades Registradas ({entries.length})
+          </h3>
+        </div>
 
-        {isLoading ? (
-          <div className="loading-message">Cargando actividades...</div>
+        {isLoading || isSyncing ? (
+          <div className="loading-message">
+            {isSyncing
+              ? '🔄 Sincronizando con el servidor...'
+              : 'Cargando actividades...'}
+          </div>
         ) : entries.length === 0 ? (
           <div className="empty-message">
             No hay actividades registradas aún. ¡Agrega la primera!
@@ -220,8 +419,9 @@ const OfflineForm: React.FC = () => {
                   onClick={() => handleDelete(entry.id!)}
                   className="delete-button"
                   title="Eliminar entrada"
+                  disabled={deletingId === entry.id}
                 >
-                  🗑️
+                  {deletingId === entry.id ? '⏳' : '🗑️'}
                 </button>
               </div>
             ))}
