@@ -42,7 +42,7 @@ export const generateTestPayload = (): TestNotificationPayload => {
  */
 export const isValidFCMToken = (token: string): boolean => {
   // Un token FCM típico tiene más de 100 caracteres y contiene caracteres alfanuméricos y algunos símbolos
-  return token && token.length > 100 && /^[A-Za-z0-9_-]+$/.test(token);
+  return Boolean(token && token.length > 100 && /^[A-Za-z0-9_-]+$/.test(token));
 };
 
 /**
@@ -54,26 +54,6 @@ export const formatTokenForDisplay = (token: string, maxLength: number = 50): st
   if (token.length <= maxLength) return token;
   
   return `${token.substring(0, maxLength)}...`;
-};
-
-/**
- * Genera instrucciones de prueba para el usuario
- */
-export const getTestInstructions = (token: string): string[] => {
-  return [
-    "1. Copia el token FCM mostrado arriba",
-    "2. Ve a Firebase Console (https://console.firebase.google.com)",
-    "3. Selecciona tu proyecto: 'pwa-notificaciones-5be22'",
-    "4. Ve a 'Messaging' en el menú lateral",
-    "5. Haz clic en 'Send your first message' o 'Nueva campaña'",
-    "6. Completa los campos:",
-    "   - Título: 'Prueba de notificación'",
-    "   - Texto: 'Esta es una prueba desde Firebase'",
-    "7. Haz clic en 'Send test message'",
-    "8. Pega el token FCM en el campo 'FCM registration token'",
-    "9. Haz clic en 'Test' para enviar la notificación",
-    "10. ¡Deberías recibir la notificación en tu PWA!"
-  ];
 };
 
 /**
