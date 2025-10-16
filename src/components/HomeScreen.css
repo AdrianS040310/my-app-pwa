@@ -76,6 +76,14 @@
     margin-bottom: 4rem;
 }
 
+.notifications-section {
+    margin-bottom: 3rem;
+}
+
+.diagnostic-section {
+    margin-bottom: 3rem;
+}
+
 .offline-form-section {
     margin-top: 3rem;
     padding-top: 3rem;

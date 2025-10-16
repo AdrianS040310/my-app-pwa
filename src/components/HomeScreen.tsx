@@ -1,5 +1,7 @@
 import React from 'react';
 import OfflineForm from './OfflineForm';
+import PushNotificationManager from './PushNotificationManager';
+import FCMDiagnostic from './FCMDiagnostic';
 import './HomeScreen.css';
 
 const HomeScreen: React.FC = () => {
@@ -39,7 +41,22 @@ const HomeScreen: React.FC = () => {
             <h3>Offline</h3>
             <p>Funciona sin conexión a internet</p>
           </div>
+
+          <div className="feature-card">
+            <h3>Notificaciones Push</h3>
+            <p>Recibe notificaciones push usando Firebase Cloud Messaging</p>
+          </div>
         </section>
+
+        <section className="notifications-section">
+          <PushNotificationManager />
+        </section>
+
+        {process.env.NODE_ENV === 'development' && (
+          <section className="diagnostic-section">
+            <FCMDiagnostic />
+          </section>
+        )}
 
         <section className="offline-form-section">
           <OfflineForm />

@@ -1,0 +1,277 @@
+.push-notification-manager {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 16px 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.notification-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.notification-header h3 {
+  margin: 0 0 8px 0;
+  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.notification-header p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.notification-status {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.status-item label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.permission-status,
+.support-status,
+.registration-status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.permission-status.granted,
+.support-status.supported,
+.registration-status.registered {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.permission-status.denied,
+.support-status.not-supported,
+.registration-status.not-registered {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.permission-status.default {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.error-message {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  border: 1px solid #fecaca;
+}
+
+.vapid-setup-container {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #fecaca;
+}
+
+.success-message {
+  background: #d1fae5;
+  color: #065f46;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  border: 1px solid #a7f3d0;
+}
+
+.notification-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: #6b7280;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #4b5563;
+  transform: translateY(-1px);
+}
+
+.btn-small {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.btn-small:hover {
+  background: #e5e7eb;
+}
+
+.registered-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.token-section {
+  background: #f9fafb;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.token-section label {
+  display: block;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.token-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.token-display {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.8rem;
+  color: #374151;
+  word-break: break-all;
+}
+
+.token-section small {
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+.not-supported-message,
+.permission-denied-message {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #fde68a;
+}
+
+.not-supported-message p,
+.permission-denied-message p {
+  margin: 0 0 8px 0;
+}
+
+.permission-denied-message ol {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.permission-denied-message li {
+  margin-bottom: 4px;
+}
+
+.notification-info {
+  background: #f0f9ff;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #bae6fd;
+}
+
+.notification-info h4 {
+  margin: 0 0 12px 0;
+  color: #0369a1;
+  font-size: 1rem;
+}
+
+.notification-info ol {
+  margin: 0;
+  padding-left: 20px;
+  color: #0c4a6e;
+}
+
+.notification-info li {
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .push-notification-manager {
+    padding: 16px;
+    margin: 8px 0;
+  }
+
+  .notification-status {
+    padding: 12px;
+  }
+
+  .status-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .token-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .token-display {
+    margin-bottom: 8px;
+  }
+}
